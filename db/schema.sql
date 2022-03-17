@@ -9,12 +9,12 @@ CREATE TABLE department (
 );
 
 CREATE TABLE ee_role (
-	id INT PRIMARY KEY AUTO_INCREMENT,
-	title VARCHAR(30) NOT NULL,
-	salary DECIMAL,
-	department_id INT NOT NULL,
-	FOREIGN KEY (department_id)
-	REFERENCES department(id)
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(30) NOT NULL,
+    salary DECIMAL,
+    department_id INT NOT NULL,
+    FOREIGN KEY (department_id)
+        REFERENCES department (id)
 );
 
 CREATE TABLE employee (
@@ -29,3 +29,7 @@ CREATE TABLE employee (
 	REFERENCES employee(id)
 	ON DELETE SET NULL
 );
+
+SELECT * FROM department;
+SELECT * FROM ee_role;
+SELECT * FROM employee;

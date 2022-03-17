@@ -35,10 +35,10 @@ function menuPrompt() {
 				"VIEW All Employees",
 				"VIEW All Roles",
 				"VIEW All Departments",
-				"ADD Employee",
-				"ADD Role",
 				"ADD Department",
-				"UPDATE Employee",
+				"ADD Role",
+				"ADD Employee",
+				"UPDATE Employee Role",
 			],
 		})
 		.then(function (val) {
@@ -59,16 +59,16 @@ function menuPrompt() {
 					addEE();
 					break;
 
-				case "UPDATE Employee":
-					updateEE();
+				case "ADD Department":
+					addDept();
 					break;
 
 				case "ADD Role":
 					addRole();
 					break;
 
-				case "ADD Department":
-					addDept();
+				case "UPDATE Employee Role":
+					updateEE();
 					break;
 			}
 		});
@@ -110,6 +110,7 @@ function viewDepts() {
 	);
 }
 
+// insets a new value into the employee table based on user input
 function addEE() {
 	inquirer
 		.prompt([
@@ -149,6 +150,7 @@ function addEE() {
 		});
 }
 
+// insets a new value into the ee_role table based on user input
 function addRole() {
 	inquirer
 		.prompt([
@@ -183,6 +185,7 @@ function addRole() {
 		});
 }
 
+// insets a new value into the department table based on user input
 function addDept() {
 	inquirer
 		.prompt([
@@ -204,6 +207,7 @@ function addDept() {
 		});
 }
 
+// updates the employee role after user selects the ee name they want to cahnge
 function updateEE() {
 	let employeeList = `SELECT employee.id, employee.first_name, employee.last_name, employee.role_id, ee_role.title FROM employee, ee_role WHERE ee_role.id = employee.role_id`;
 
@@ -214,9 +218,8 @@ function updateEE() {
 					name: "eeName",
 					type: "list",
 					message: "Choose an employee to update",
-					choices: data.map((x) => ({ name: x.first_name, value: x.id })),
+					choices: data.map((ee) => ({ name: ee.first_name, value: ee.id })),
 				},
-
 				{
 					name: "newRole",
 					type: "input",
@@ -241,11 +244,13 @@ function renderProjectLogo() {
 	console.log(logo(config).render());
 }
 
+// makes logo and calls menu
 function init() {
 	renderProjectLogo();
 	menuPrompt();
 }
 
+// runs init funtion on app start
 init();
 
 // creating port listen
