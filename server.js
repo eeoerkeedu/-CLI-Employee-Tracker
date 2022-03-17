@@ -2,7 +2,7 @@
 const logo = require("asciiart-logo");
 const express = require("express");
 const inquirer = require("inquirer");
-const mysql = require("mysql2");
+const mysql2 = require("mysql2");
 const ct = require("console.table");
 
 const PORT = process.env.PORT || 3001;
@@ -13,7 +13,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 // connecting to the database
-const db = mysql.createConnection(
+const db = mysql2.createConnection(
 	{
 		host: "localhost",
 		user: "root",
@@ -69,12 +69,12 @@ function menuPrompt() {
 					break;
 
 				case "ADD Role":
-					// addRole();
+					addRole();
 					console.log("ADD Role");
 					break;
 
 				case "ADD Department":
-					// addDept();
+					addDept();
 					console.log("ADD Department");
 					break;
 			}
@@ -118,40 +118,97 @@ function viewDepts() {
 }
 
 function addEE() {
-	let roleList = [];
-
-	function genRoleList() {
-		db.query("SELECT ee_role.title FROM ee_role", function (err, results) {
-			roleList = results;
+	inquirer
+		.prompt([
+			{
+				name: "firstName",
+				type: "input",
+				message: "Enter employee's first name ",
+			},
+			{
+				name: "lastName",
+				type: "input",
+				message: "Enter employee's last name ",
+			},
+			{
+				name: "role",
+				type: "input",
+				message: "What is the employee's role? ",
+				default: 2,
+			},
+			{
+				name: "manager",
+				type: "input",
+				message: "What is the employee's manager ID?",
+				default: 1,
+			},
+		])
+		.then((answer) => {
+			db.query(
+				`INSERT INTO employee VALUES (default,
+				"${answer.firstName}",
+				"${answer.lastName}",
+				"${answer.role}",
+				"${answer.manager}")`
+			);
+			console.log(`Employee ${answer.firstName} ${answer.lastName} added`);
+			menuPrompt();
 		});
-	}
-	genRoleList();
-	console.log(roleList);
+}
 
-	inquirer.prompt([
-		{
-			name: "firstName",
-			type: "input",
-			message: "Enter employee's first name ",
-		},
-		{
-			name: "lastName",
-			type: "input",
-			message: "Enter employee's last name ",
-		},
-		{
-			name: "role",
-			type: "list",
-			message: "What is the employee's role? ",
-			choices: roleList,
-		},
-		// {
-		// 	name: "manager",
-		// 	type: "rawlist",
-		// 	message: "Who is the employee's manager?",
-		// 	choices: listManagers(),
-		// },
-	]);
+function addRole() {
+	inquirer
+		.prompt([
+			{
+				name: "newRole",
+				type: "input",
+				message: "Enter the role title you'd like to add",
+			},
+			{
+				name: "roleSalary",
+				type: "input",
+				message: "Enter the salary for this role",
+			},
+			{
+				name: "roleDept",
+				type: "input",
+				message: "Enter the department ID for this role.",
+			},
+		])
+		.then((answer) => {
+			db.query(
+				`INSERT INTO ee_role VALUES (default,
+				"${answer.newRole}",
+				"${answer.roleSalary}",
+				"${answer.roleDept}")`,
+				(err, res) => {
+					console.log(`${answer.newRole} role added`);
+					console.log(err);
+					menuPrompt();
+				}
+			);
+		});
+}
+
+function addDept() {
+	inquirer
+		.prompt([
+			{
+				name: "newDept",
+				type: "input",
+				message: "Enter the name of the new department?",
+			},
+		])
+		.then((answer) => {
+			db.query(
+				`INSERT INTO department VALUES (default, "${answer.newDept}");`,
+				(err, res) => {
+					console.log(`${answer.newDept} department added`);
+					console.log(err);
+					menuPrompt();
+				}
+			);
+		});
 }
 
 // logo writer
