@@ -45,37 +45,30 @@ function menuPrompt() {
 			switch (val.choice) {
 				case "VIEW All Employees":
 					viewEEs();
-					console.log("VIEW All Employees");
 					break;
 
 				case "VIEW All Roles":
 					viewRoles();
-					console.log("VIEW All Roles");
 					break;
 
 				case "VIEW All Departments":
 					viewDepts();
-					console.log("VIEW All Departments");
 					break;
 
 				case "ADD Employee":
 					addEE();
-					console.log("ADD Employee");
 					break;
 
 				case "UPDATE Employee":
-					// updateEE();
-					console.log("UPDATE Employee");
+					updateEE();
 					break;
 
 				case "ADD Role":
 					addRole();
-					console.log("ADD Role");
 					break;
 
 				case "ADD Department":
 					addDept();
-					console.log("ADD Department");
 					break;
 			}
 		});
@@ -84,7 +77,7 @@ function menuPrompt() {
 // funtion to display all EEs in a table format and print menu again
 function viewEEs() {
 	db.query(
-		"SELECT employee.first_name, employee.last_name, ee_role.title, ee_role.salary, department.department_name, CONCAT(e.first_name, ' ' ,e.last_name) AS Manager FROM employee INNER JOIN ee_role on ee_role.id = employee.role_id INNER JOIN department on department.id = ee_role.department_id left join employee e on employee.manager_id = e.id;",
+		"SELECT employee.id, employee.first_name, employee.last_name, ee_role.title, ee_role.salary, department.department_name, CONCAT(e.first_name, ' ' ,e.last_name) AS Manager FROM employee INNER JOIN ee_role on ee_role.id = employee.role_id INNER JOIN department on department.id = ee_role.department_id left join employee e on employee.manager_id = e.id;",
 		function (err, res) {
 			if (err) throw err;
 			console.table(res);
@@ -209,6 +202,37 @@ function addDept() {
 				}
 			);
 		});
+}
+
+function updateEE() {
+	let employeeList = `SELECT employee.id, employee.first_name, employee.last_name, employee.role_id, ee_role.title FROM employee, ee_role WHERE ee_role.id = employee.role_id`;
+
+	db.query(employeeList, (err, data) => {
+		inquirer
+			.prompt([
+				{
+					name: "eeName",
+					type: "list",
+					message: "Choose an employee to update",
+					choices: data.map((x) => ({ name: x.first_name, value: x.id })),
+				},
+
+				{
+					name: "newRole",
+					type: "input",
+					message: "Enter the employee's new role",
+				},
+			])
+			.then((answer) => {
+				db.query(
+					`UPDATE employee SET role_id = "${answer.newRole}" WHERE id = "${answer.eeName}"`,
+					(err, result) => {
+						console.log(err);
+						menuPrompt();
+					}
+				);
+			});
+	});
 }
 
 // logo writer
