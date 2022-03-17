@@ -4,7 +4,6 @@ const express = require("express");
 const inquirer = require("inquirer");
 const mysql = require("mysql2");
 const ct = require("console.table");
-const { prompt } = require("inquirer");
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -55,12 +54,12 @@ function menuPrompt() {
 					break;
 
 				case "VIEW All Departments":
-					// viewDepts();
+					viewDepts();
 					console.log("VIEW All Departments");
 					break;
 
 				case "ADD Employee":
-					// addEE();
+					addEE();
 					console.log("ADD Employee");
 					break;
 
@@ -94,6 +93,7 @@ function viewEEs() {
 	);
 }
 
+// funtion to display all organization Roles in a table format and print menu again
 function viewRoles() {
 	db.query(
 		"SELECT ee_role.title, ee_role.id, department.department_name, ee_role.salary FROM ee_role INNER JOIN department on department.id = ee_role.department_id",
@@ -103,6 +103,55 @@ function viewRoles() {
 			menuPrompt();
 		}
 	);
+}
+
+// funtion to display all organization Departments in a table format and print menu again
+function viewDepts() {
+	db.query(
+		"SELECT department.department_name, department.id FROM department",
+		function (err, res) {
+			if (err) throw err;
+			console.table(res);
+			menuPrompt();
+		}
+	);
+}
+
+function addEE() {
+	let roleList = [];
+
+	function genRoleList() {
+		db.query("SELECT ee_role.title FROM ee_role", function (err, results) {
+			roleList = results;
+		});
+	}
+	genRoleList();
+	console.log(roleList);
+
+	inquirer.prompt([
+		{
+			name: "firstName",
+			type: "input",
+			message: "Enter employee's first name ",
+		},
+		{
+			name: "lastName",
+			type: "input",
+			message: "Enter employee's last name ",
+		},
+		{
+			name: "role",
+			type: "list",
+			message: "What is the employee's role? ",
+			choices: roleList,
+		},
+		// {
+		// 	name: "manager",
+		// 	type: "rawlist",
+		// 	message: "Who is the employee's manager?",
+		// 	choices: listManagers(),
+		// },
+	]);
 }
 
 // logo writer
