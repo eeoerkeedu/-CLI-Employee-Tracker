@@ -35,10 +35,12 @@ function menuPrompt() {
 				"VIEW All Employees",
 				"VIEW All Roles",
 				"VIEW All Departments",
+				"VIEW Employees by Manager",
 				"ADD Department",
 				"ADD Role",
 				"ADD Employee",
 				"UPDATE Employee Role",
+				"UPDATE Employee Manager",
 			],
 		})
 		.then(function (val) {
@@ -68,7 +70,15 @@ function menuPrompt() {
 					break;
 
 				case "UPDATE Employee Role":
-					updateEE();
+					updateEERole();
+					break;
+					
+				case "UPDATE Employee Manager":
+					updateEEMgr();
+					break;
+
+				case "VIEW Employees by Manager":
+					viewMngrEEs();
 					break;
 			}
 		});
@@ -207,8 +217,8 @@ function addDept() {
 		});
 }
 
-// updates the employee role after user selects the ee name they want to cahnge
-function updateEE() {
+// updates the employee role after user selects the ee name they want to change
+function updateEERole() {
 	let employeeList = `SELECT employee.id, employee.first_name, employee.last_name, employee.role_id, ee_role.title FROM employee, ee_role WHERE ee_role.id = employee.role_id`;
 
 	db.query(employeeList, (err, data) => {
@@ -236,6 +246,49 @@ function updateEE() {
 				);
 			});
 	});
+}
+
+// updates the employee manager after user selects the ee name they want to change
+function updateEEMgr() {
+	let employeeList = `SELECT employee.id, employee.first_name, employee.last_name, employee.role_id, ee_role.title FROM employee, ee_role WHERE ee_role.id = employee.role_id`;
+
+	db.query(employeeList, (err, data) => {
+		inquirer
+			.prompt([
+				{
+					name: "eeName",
+					type: "list",
+					message: "Choose an employee to update",
+					choices: data.map((ee) => ({ name: ee.first_name, value: ee.id })),
+				},
+				{
+					name: "newMgr",
+					type: "input",
+					message: "Enter the employee's new Manager",
+				},
+			])
+			.then((answer) => {
+				db.query(
+					`UPDATE employee SET manager_id = "${answer.newMgr}" WHERE id = "${answer.eeName}"`,
+					(err, result) => {
+						console.log(err);
+						menuPrompt();
+					}
+				);
+			});
+	});
+}
+
+// funtion to display all employees by manager in a table format and print menu again
+function viewMngrEEs() {
+	db.query(
+		"SELECT employee.id, employee.first_name, employee.last_name, ee_role.title, ee_role.salary, department.department_name, employee.first_name AS CONCAT(e.first_name, ' ' ,e.last_name) FROM employee INNER JOIN ee_role on ee_role.id = employee.role_id INNER JOIN department on department.id = ee_role.department_id left join employee e on employee.manager_id = e.id;",
+		function (err, res) {
+			if (err) throw err;
+			console.table(res);
+			menuPrompt();
+		}
+	);
 }
 
 // logo writer
